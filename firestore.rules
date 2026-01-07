@@ -1,0 +1,20 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Regras para a coleção de holdings (ativos)
+    match /holdings/{holdingId} {
+      // Permitir criar ou atualizar se o utilizador estiver autenticado 
+      // e o userId no documento coincidir com o UID dele.
+      allow create, update: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      
+      // Permitir ler ou apagar se o utilizador for o dono do documento existente.
+      allow read, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    // Bloquear tudo o resto por padrão
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
